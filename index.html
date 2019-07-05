@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Daily 5</title>
+<link rel="shortcut icon" type="image/x-icon" href="favicon.ico" />
+
+<link rel="stylesheet" href="css/jquery-ui.min.css"/>
+<link rel="stylesheet" href="css/jquery-ui.theme-start.min.css"/>
+<style>
+body { font-family:Verdana, Helvetica, Arial, sans-serif; }
+table {	margin-top:10px; }
+th button { margin-bottom:5px; }
+td { text-align:center; }
+td label { display:block; cursor:pointer; }
+td button { margin-left:5px; }
+input[type=checkbox] { cursor:pointer; width:20px; height:20px; }
+button { cursor:pointer; }
+.studentName { font-family:BoyzRGross, Verdana, Helvetica, Arial, sans-serif; font-size:24px; position:relative; top:3px; padding-right:5px; text-align:right; }
+tr td:nth-child(2) { background-color:#ff0000; }
+tr td:nth-child(3) { background-color:#ff6600; }
+tr td:nth-child(4) { background-color:#ffff00; }
+tr td:nth-child(5) { background-color:#00ff00; }
+tr td:nth-child(6) { background-color:#0000ff; }
+</style>
+<script src="js/jquery-1.11.3.min.js"></script>
+<script src="js/jquery-ui.min.js"></script>
+<script>
+var students = [];
+
+$(document).ready(function(e) {
+	
+	loadData();
+	
+	// checkbox
+	$('input[type=checkbox]').change(function(e) {
+		saveData();
+    });
+	
+	// column button
+	$('th button').click(function(event) {
+		var i = $('th button').index($(this));
+		$('table tbody tr').each(function(index, element){
+			var cb = $(this).find('td:nth-child('+(i+2)+') input[type=checkbox]');
+			cb.prop('checked', '');
+		});
+		saveData();
+	});
+	
+	// row button
+	$('td button').click(function(e) {
+        var cbs = $(this).parent().parent().find('td input[type=checkbox]');
+		$.each(cbs, function(index, value){
+			$(this).prop('checked', '');
+		});
+		saveData();
+    });
+	
+	// clear all button
+	$('#clearAllBtn').click(function(e) {
+        $('table tbody tr').each(function(index, element) {
+            $(this).find('td input[type=checkbox]').prop('checked', '');
+        });
+		saveData();
+    });
+});
+
+function saveData()
+{
+	students = [];
+	
+	$('table tbody tr').each(function(index, element) {
+		var id = $(this).data('id');
+		var name = $(this).find('td:first-child').text();
+		var choices = [];
+		$.each($(this).find('input[type=checkbox]'), function(index, value){
+			choices[index] = ($(this).prop('checked')) ? 1 : 0;
+		});
+		var student = {
+			id:id,
+			name:name,
+			choices:choices
+		};
+		students.push(student);
+    });
+	
+	localStorage.setItem('students', JSON.stringify(students));
+}
+
+function loadData()
+{
+	students = JSON.parse(localStorage.getItem('students')) || [];
+	if (students.length > 0)
+	{
+		$('table').show().find('tbody').html('');
+		$.each(students, function(index, value){
+			var row = '<tr data-id="' + value.id + '"><td class="studentName">' + value.name + '</td>';
+			$.each(value.choices, function(i, v){
+				var checked = (value.choices[i] === 1) ? 'checked' : '';
+				row += '<td><label><input type="checkbox" ' + checked + '/></label></td>';
+			});
+			row += '<td><button>Clear</button></td></tr>';
+			$('table tbody').append(row);
+		});
+	}
+	else
+	{
+		$('table').hide().before('<p>No students found</p>');
+	}
+}
+</script>
+</head>
+<body>
+
+<a href="admin.html">Admin</a>
+<button id="clearAllBtn">Clear All</button>
+
+<table>
+	<thead>
+    	<tr>
+			<th>&nbsp;</th>
+        	<th><button>Clear</button><br><img src="images/Daily5_1.png"/><br></th>
+            <th><button>Clear</button><br><img src="images/Daily5_2.png"/><br></th>
+            <th><button>Clear</button><br><img src="images/Daily5_3.png"/><br></th>
+            <th><button>Clear</button><br><img src="images/Daily5_4.png"/><br></th>
+            <th><button>Clear</button><br><img src="images/Daily5_5.png"/><br></th>
+            <th>&nbsp;</th>
+        </tr>
+    </thead>
+    <tbody></tbody>
+</table>
+
+</body>
+</html>

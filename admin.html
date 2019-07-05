@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Daily 5 | Admin</title>
+
+<link rel="stylesheet" href="css/jquery-ui.min.css"/>
+<link rel="stylesheet" href="css/jquery-ui.theme-start.min.css"/>
+<style>
+body { font-family:Verdana, Helvetica, Arial, sans-serif; }
+.ui-icon { display:inline-block; margin-left:8px; position:relative; top:1px; cursor:pointer; }
+</style>
+<script src="js/jquery-1.11.3.min.js"></script>
+<script src="js/jquery-ui.min.js"></script>
+<script>
+var students = [];
+var oldName;
+var newName;
+
+$(document).ready(function(e) {
+	
+	loadData();
+	
+	$('#addBtn').click(function(e) {
+		addStudent();
+    });
+	
+	$('#newStudent').keypress(function(e) {
+        if (e.keyCode == 13)
+		{
+			$('#addBtn').click();
+		}
+    });
+	
+	$(document).on('click', 'span.delete', function(e) {
+		var id = $(this).parent().data('id');
+		$.each(students, function(index, value){
+			if (id === value.id)
+			{
+				students.splice(index, 1);
+				return false;
+			}
+		});
+		saveData();
+    });
+	
+	$(document).on('focus', '#list span.name', function(){
+		var id = $(this).parent().data('id');
+		oldName = $(this).text();
+	});
+	$(document).on('blur', '#list span.name', function(){
+		var newName = $.trim($(this).text());
+		if (newName === '')
+		{
+			alert('Please enter a name');
+			$(this).text(oldName);
+			return false;
+		}
+		
+		var id = $(this).parent().data('id');
+		$.each(students, function(index, value){
+			if (id === value.id)
+			{
+				value.name = capitalize(newName);
+			}
+		});
+		saveData();
+	});
+});
+
+function addStudent()
+{
+	var name = $.trim($('#newStudent').val());
+	if (name === '')
+	{
+		alert('Please enter a name');
+		return false;
+	}
+	
+	var student = {
+		id:$('#list>li').length + 1,
+		name:capitalize(name),
+		choices:[0,0,0,0,0]
+	}
+	students.push(student);
+	$('#newStudent').val('');
+	saveData();
+}
+
+function saveData()
+{
+	localStorage.setItem('students', JSON.stringify(students));
+	loadData();
+}
+
+function loadData()
+{
+	students = JSON.parse(localStorage.getItem('students')) || [];
+	if (students.length > 0)
+	{
+		$('#list').html('');
+		$.each(students, function(index, value){
+			$('#list').append('<li data-id="' + value.id + '"><span class="name" contenteditable>' + value.name + '</span><span class="delete ui-icon ui-icon-trash"></span></li>');
+		});
+	}
+	else
+	{
+		$('#list').html('No students found');
+	}
+}
+
+function capitalize(name)
+{
+	var arr = name.split(" ");
+	var fname = arr[0].charAt(0).toUpperCase() + arr[0].substr(1);
+	var lname = (arr.length > 1) ? arr[1].charAt(0).toUpperCase() + arr[1].substr(1) : '';
+	var fullName = (lname !== '') ? fname + ' ' + lname : fname;
+	return fullName;
+}
+
+function getMaxID()
+{
+	var maxID = 0;
+	$('#list li').each(function(index, value){
+		var id = $(this).data('id');
+		if (id > maxID)
+		{
+			maxID = id;
+		}
+	});
+	return maxID;
+}
+</script>
+</head>
+<body>
+
+<a href="index.html">Back to App</a>
+<input type="text" id="newStudent" placeholder="Enter a name...">
+<button id="addBtn">Add</button>
+<br>
+<ol id="list"></ol>
+
+
+</body>
+</html>
